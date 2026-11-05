@@ -388,16 +388,50 @@
             try {
                 dadosSistema = JSON.parse(localStorage.getItem('dados_boloes_mega_v5'));
             } catch(e) { console.error(e); }
-        } else {
-            localStorage.removeItem('dados_boloes_mega_v4');
         }
 
         function salvarDadosLocal() {
             localStorage.setItem('dados_boloes_mega_v5', JSON.stringify(dadosSistema));
         }
 
+        // URL do Google Apps Script
+        const URL_DO_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz08EXQrzrD-sT9-Pl-72jkLUNImuakZHd8mCjSSG9LziTEc8AW-3VsxupRGf1okK02/exec";
+
+        // Sincroniza com a planilha (respeitando se apagou ou alterou lá no Sheets)
+        async function sincronizarComPlanilha() {
+            try {
+                const response = await fetch(`${URL_DO_APPS_SCRIPT}?acao=carregarCotas&bolao=${bolaoAtivo}`);
+                const resultado = await response.json();
+                
+                if(resultado.status === "success") {
+                    const bolaoObj = bolaoAtivo === 1 ? dadosSistema.bolao1 : dadosSistema.bolao2;
+                    
+                    resultado.cotas.forEach(itemPlanilha => {
+                        const cotaLocal = bolaoObj.cotas.find(c => c.id === itemPlanilha.id);
+                        if(cotaLocal) {
+                            if(!itemPlanilha.status || itemPlanilha.status === "livre" || itemPlanilha.status === "") {
+                                cotaLocal.status = 'livre';
+                                cotaLocal.nome = '';
+                                cotaLocal.cpf = '';
+                            } else {
+                                cotaLocal.status = itemPlanilha.status.includes("reservado") ? "reservado" : "confirmado";
+                                cotaLocal.nome = itemPlanilha.nome;
+                                cotaLocal.cpf = itemPlanilha.cpf;
+                            }
+                        }
+                    });
+                    
+                    salvarDadosLocal();
+                    renderizarCotas();
+                    console.log("HTML sincronizado com sucesso com a planilha!");
+                }
+            } catch(err) {
+                console.error("Erro ao sincronizar com a planilha:", err);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            renderizarCotas();
+            sincronizarComPlanilha();
             atualizarResumoAcertos();
         });
 
@@ -431,7 +465,7 @@
             document.getElementById('titulo-grid-bolao').innerHTML = `<i class="fa-solid fa-list-check text-amber-400"></i> Cotas do Bolão 0${num} (R$ ${num === 1 ? '110,00' : '60,00'} - Máx 44)`;
             document.getElementById('badge-bolao-ativo').innerText = `Bolão 0${num}`;
 
-            renderizarCotas();
+            sincronizarComPlanilha();
             atualizarResumoAcertos();
         }
 
@@ -516,7 +550,6 @@
         function fecharModalCota() {
             document.getElementById('modal-cota').classList.add('hidden');
         }
-const URL_DO_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz08EXQrzrD-sT9-Pl-72jkLUNImuakZHd8mCjSSG9LziTEc8AW-3VsxupRGf1okK02/exec";
 
         async function enviarReserva(e) {
             e.preventDefault();
@@ -564,6 +597,7 @@ const URL_DO_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz08EXQrzrD-
             const urlWp = `https://wa.me/5514981485038?text=${encodeURIComponent(mensagem)}`;
             window.open(urlWp, '_blank');
         }
+
         function combinacao(n, k) {
             if (k < 0 || k > n) return 0;
             if (k === 0 || k === n) return 1;
@@ -650,14 +684,12 @@ const URL_DO_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz08EXQrzrD-
             document.getElementById('acertos-quadra-val').innerText = totalQuadra;
         }
 
-        // Função de Sincronização via API da Caixa (Só puxa se o Admin não tiver definido manualmente)
         async function sincronizarDadosCaixa() {
             const icon = document.getElementById('sync-icon');
             const statusSync = document.getElementById('status-sync');
             icon.classList.add('fa-spin');
             statusSync.innerText = "Buscando dados da Caixa...";
 
-            // Se o Admin definiu manualmente, respeita o Admin
             if(dadosSistema.boloinfo.adminDefiniu) {
                 setTimeout(() => {
                     icon.classList.remove('fa-spin');
@@ -785,7 +817,7 @@ const URL_DO_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz08EXQrzrD-
             dadosSistema.boloinfo.concurso = nomeConcurso;
             dadosSistema.boloinfo.dataSorteio = new Date().toLocaleDateString('pt-BR');
             dadosSistema.boloinfo.dezenasSorteadas = textoDezenas.split(/[\s,]+/).filter(Boolean).map(n => n.padStart(2, '0'));
-            dadosSistema.boloinfo.adminDefiniu = true; // Marca que o Admin assumiu o controle
+            dadosSistema.boloinfo.adminDefiniu = true;
 
             salvarDadosLocal();
             atualizarResumoAcertos();
