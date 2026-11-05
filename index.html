@@ -272,7 +272,7 @@
 
     <!-- MODAL DE PAINEL ADMIN -->
     <div id="modal-admin" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="modal-glass border border-slate-800 rounded-3xl w-full max-w-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div class="modal-glass border border-slate-800 rounded-3xl w-full max-w-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="fecharAdminModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white cursor-pointer">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
@@ -297,7 +297,7 @@
                 <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                     <div>
                         <h3 class="text-lg font-bold text-white">Gerenciamento do Sistema</h3>
-                        <p class="text-xs text-slate-400">Configure os bolões, dezenas (6 a 15 números) e cotas (máx 44)</p>
+                        <p class="text-xs text-slate-400">Configure os bolões, dezenas (6 a 15 números) e status das cotas</p>
                     </div>
                     <button onclick="sairAdmin()" class="text-xs text-red-400 hover:underline font-semibold">Sair</button>
                 </div>
@@ -308,7 +308,7 @@
                     <button onclick="mudarAdminTab(3)" id="admin-tab-3" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold text-xs cursor-pointer">Sorteio & Config</button>
                 </div>
 
-                <div id="admin-conteudo-bolao" class="space-y-4">
+                <div id="admin-conteudo-bolao" class="space-y-6">
                     <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3">
                         <h4 class="text-sm font-bold text-amber-400" id="admin-titulo-bolao-atual">Editando Bolão 01</h4>
                         <div class="grid grid-cols-2 gap-4">
@@ -324,12 +324,23 @@
 
                         <div class="pt-2">
                             <label class="block text-xs text-slate-400 mb-1">Jogos Cadastrados (Dezenas separadas por vírgula - 6 a 15 números por jogo)</label>
-                            <textarea id="admin-textarea-jogos" rows="6" placeholder="Ex: 05, 12, 23, 34, 45, 52" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white text-xs font-mono"></textarea>
+                            <textarea id="admin-textarea-jogos" rows="4" placeholder="Ex: 05, 12, 23, 34, 45, 52" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white text-xs font-mono"></textarea>
                         </div>
 
                         <button onclick="salvarConfigBolao()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition-all cursor-pointer">
-                            Salvar Alterações do Bolão
+                            Salvar Configurações do Bolão
                         </button>
+                    </div>
+
+                    <!-- GERENCIADOR INDIVIDUAL DE COTAS (ADMIN) -->
+                    <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-sm font-bold text-emerald-400"><i class="fa-solid fa-users-gear mr-1"></i> Gerenciar Status das Cotas</h4>
+                            <span class="text-[11px] text-slate-400">Clique para liberar quem não pagou ou confirmar</span>
+                        </div>
+                        <div id="admin-lista-cotas-container" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            <!-- Preenchido dinamicamente -->
+                        </div>
                     </div>
                 </div>
 
@@ -397,7 +408,7 @@
         // URL do Google Apps Script
         const URL_DO_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz08EXQrzrD-sT9-Pl-72jkLUNImuakZHd8mCjSSG9LziTEc8AW-3VsxupRGf1okK02/exec";
 
-        // Sincroniza com a planilha (respeitando se apagou ou alterou lá no Sheets)
+        // Sincroniza com a planilha
         async function sincronizarComPlanilha() {
             try {
                 const response = await fetch(`${URL_DO_APPS_SCRIPT}?acao=carregarCotas&bolao=${bolaoAtivo}`);
@@ -571,31 +582,18 @@
 
             fecharModalCota();
 
-            // Envia os dados para a planilha do Google Sheets em segundo plano
             try {
                 await fetch(URL_DO_APPS_SCRIPT, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "text/plain;charset=utf-8"
-                    },
-                    body: JSON.stringify({
-                        bolao: bolaoAtivo,
-                        cotaId: cotaSelecionadaId,
-                        nome: nome,
-                        cpf: cpf
-                    })
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ bolao: bolaoAtivo, cotaId: cotaSelecionadaId, nome: nome, cpf: cpf })
                 });
-                console.log("Salvo na planilha com sucesso!");
-            } catch (err) {
-                console.error("Erro ao salvar na planilha:", err);
-            }
+            } catch (err) { console.error(err); }
 
-            // Prepara e abre o WhatsApp com a mensagem pronta
             let textoJogos = bolao.jogos.map((j, i) => `Jogo ${i+1}: [ ${j} ]`).join('\n');
             const mensagem = `Olá Fábio! Gostaria de confirmar a reserva da Cota #${String(cotaSelecionadaId).padStart(2, '0')} do Bolão 0${bolaoAtivo} (R$ ${bolao.valorCota},00).\n\nMeus dados:\nNome: ${nome}\nCPF: ${cpf}\n\n*Números do Bolão Escolhido:*\n${textoJogos}\n\nAguardo a confirmação e a foto dos números reais jogados na lotérica enviados via transmissão WhatsApp.`;
             
-            const urlWp = `https://wa.me/5514981485038?text=${encodeURIComponent(mensagem)}`;
-            window.open(urlWp, '_blank');
+            window.open(`https://wa.me/5514981485038?text=${encodeURIComponent(mensagem)}`, '_blank');
         }
 
         function combinacao(n, k) {
@@ -603,9 +601,7 @@
             if (k === 0 || k === n) return 1;
             if (k > n / 2) k = n - k;
             let c = 1;
-            for (let i = 1; i <= k; i++) {
-                c = c * (n - (k - i)) / i;
-            }
+            for (let i = 1; i <= k; i++) { c = c * (n - (k - i)) / i; }
             return Math.round(c);
         }
 
@@ -617,49 +613,33 @@
             let totalSena = 0, totalQuina = 0, totalQuadra = 0;
             const dezenasSorteadas = dadosSistema.boloinfo.dezenasSorteadas || [];
 
-            const concursoEl = document.getElementById('concurso-numero');
-            const dataSorteioEl = document.getElementById('data-sorteio-txt');
-            const dezenasTxtEl = document.getElementById('dezenas-sorteadas-txt');
-
-            concursoEl.innerText = dadosSistema.boloinfo.concurso || "Mega-Sena";
-            dataSorteioEl.innerText = dadosSistema.boloinfo.dataSorteio ? `Sorteio: ${dadosSistema.boloinfo.dataSorteio}` : "Sorteio: --/--/----";
+            document.getElementById('concurso-numero').innerText = dadosSistema.boloinfo.concurso || "Mega-Sena";
+            document.getElementById('data-sorteio-txt').innerText = dadosSistema.boloinfo.dataSorteio ? `Sorteio: ${dadosSistema.boloinfo.dataSorteio}` : "Sorteio: --/--/----";
 
             if(dezenasSorteadas.length > 0) {
-                dezenasTxtEl.innerText = "Sorteadas: " + dezenasSorteadas.join(', ');
+                document.getElementById('dezenas-sorteadas-txt').innerText = "Sorteadas: " + dezenasSorteadas.join(', ');
             } else {
-                dezenasTxtEl.innerText = "Aguardando realização do sorteio oficial...";
+                document.getElementById('dezenas-sorteadas-txt').innerText = "Aguardando realização do sorteio oficial...";
             }
 
             bolao.jogos.forEach((jogoStr, idx) => {
                 const dezenasJogo = jogoStr.split(/[\s,]+/).filter(Boolean).map(n => n.padStart(2, '0'));
-                
                 let acertosCount = 0;
-                let senaNesteJogo = 0;
-                let quinaNesteJogo = 0;
-                let quadraNesteJogo = 0;
+                let senaNesteJogo = 0, quinaNesteJogo = 0, quadraNesteJogo = 0;
 
                 if(dezenasSorteadas.length > 0) {
                     acertosCount = dezenasJogo.filter(num => dezenasSorteadas.includes(num)).length;
-                    
-                    const k = dezenasJogo.length; 
-                    const h = acertosCount;        
+                    const k = dezenasJogo.length, h = acertosCount;        
 
                     if (k === 6) {
                         if (h === 6) senaNesteJogo = 1;
                         else if (h === 5) quinaNesteJogo = 1;
                         else if (h === 4) quadraNesteJogo = 1;
                     } else {
-                        if (h >= 6) {
-                            senaNesteJogo = combinacao(h, 6) * combinacao(k - h, 0);
-                        }
-                        if (h >= 5) {
-                            quinaNesteJogo = combinacao(h, 5) * combinacao(k - h, 1);
-                        }
-                        if (h >= 4) {
-                            quadraNesteJogo = combinacao(h, 4) * combinacao(k - h, 2);
-                        }
+                        if (h >= 6) senaNesteJogo = combinacao(h, 6) * combinacao(k - h, 0);
+                        if (h >= 5) quinaNesteJogo = combinacao(h, 5) * combinacao(k - h, 1);
+                        if (h >= 4) quadraNesteJogo = combinacao(h, 4) * combinacao(k - h, 2);
                     }
-
                     totalSena += senaNesteJogo;
                     totalQuina += quinaNesteJogo;
                     totalQuadra += quadraNesteJogo;
@@ -713,16 +693,10 @@
                     salvarDadosLocal();
                     renderizarCotas();
                     atualizarResumoAcertos();
-                    
                     statusSync.innerText = "Online e Sincronizado (Caixa)";
-                    alert(`Sincronizado com sucesso!\nConcurso: ${data.concurso} (${data.data})\nDezenas: ${data.dezenas.join(', ')}`);
-                } else {
-                    throw new Error('Dados incompletos');
                 }
             } catch (error) {
-                console.error(error);
                 statusSync.innerText = "Erro ao conectar";
-                alert('Não foi possível buscar automaticamente na API da Caixa. Verifique sua conexão ou defina as dezenas pelo Painel Admin.');
             } finally {
                 icon.classList.remove('fa-spin');
             }
@@ -782,6 +756,58 @@
             document.getElementById('admin-valor-cota').value = bolao.valorCota;
             document.getElementById('admin-total-cotas').value = Math.min(bolao.totalCotas, 44);
             document.getElementById('admin-textarea-jogos').value = (bolao.jogos || []).join('\n');
+            renderizarAdminListaCotas();
+        }
+
+        function renderizarAdminListaCotas() {
+            const bolao = adminTabAtiva === 1 ? dadosSistema.bolao1 : dadosSistema.bolao2;
+            const container = document.getElementById('admin-lista-cotas-container');
+            container.innerHTML = '';
+
+            bolao.cotas.forEach(cota => {
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs";
+                
+                let badgeStatusColor = "text-emerald-400 bg-emerald-500/10";
+                if(cota.status === 'reservado') badgeStatusColor = "text-amber-400 bg-amber-500/10";
+                if(cota.status === 'confirmado') badgeStatusColor = "text-indigo-400 bg-indigo-500/10";
+
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-white">#${String(cota.id).padStart(2, '0')}</span>
+                        <span class="px-2 py-0.5 rounded font-semibold uppercase text-[10px] ${badgeStatusColor}">${cota.status}</span>
+                        <span class="text-slate-300">${cota.nome ? cota.nome : '<span class="text-slate-500">Disponível</span>'}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="mudarStatusCotaAdmin(${cota.id}, 'livre')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold cursor-pointer">Liberar</button>
+                        <button onclick="mudarStatusCotaAdmin(${cota.id}, 'reservado')" class="px-2.5 py-1 rounded bg-amber-600/20 hover:bg-amber-600/40 text-amber-400 font-semibold cursor-pointer">Reservar</button>
+                        <button onclick="mudarStatusCotaAdmin(${cota.id}, 'confirmado')" class="px-2.5 py-1 rounded bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 font-semibold cursor-pointer">Confirmar</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function mudarStatusCotaAdmin(cotaId, novoStatus) {
+            const bolao = adminTabAtiva === 1 ? dadosSistema.bolao1 : dadosSistema.bolao2;
+            const cota = bolao.cotas.find(c => c.id === cotaId);
+            if(cota) {
+                cota.status = novoStatus;
+                if(novoStatus === 'livre') {
+                    cota.nome = '';
+                    cota.cpf = '';
+                }
+                salvarDadosLocal();
+                renderizarCotas();
+                renderizarAdminListaCotas();
+
+                // Atualiza também na planilha via background
+                fetch(URL_DO_APPS_SCRIPT, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ bolao: adminTabAtiva, cotaId: cotaId, nome: cota.nome, cpf: cota.cpf, status: novoStatus })
+                }).catch(err => console.error(err));
+            }
         }
 
         function salvarConfigBolao() {
