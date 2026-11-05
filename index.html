@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolões Mega da Virada - Vai Que Dá!</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+        .glass-card { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .modal-glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px); }
+        .transition-all { transition: all 0.2s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Topo / Cabeçalho com Aviso de 1 Bilhão -->
+    <header class="w-full bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-slate-950 font-bold py-2 px-4 text-center text-xs md:text-sm shadow-md tracking-wide">
+        <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Prêmio não acumula — Maior prêmio iniciado em um bolão: + de 1 Bilhão!
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
+        <!-- Barra Superior com Título, Botão de Sincronização e Admin -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-slate-900/60 p-4 rounded-2xl border border-slate-800 shadow-xl">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-amber-500/20">
+                    <i class="fa-solid fa-clover"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-white">Bolões Mega da Virada</h1>
+                    <p class="text-xs text-amber-400 font-semibold flex items-center gap-1.5">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Sistema Oficial de Fábio de Macatuba
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="sincronizarDadosCaixa()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 shadow transition-all cursor-pointer">
+                    <i class="fa-solid fa-rotate text-amber-400" id="sync-icon"></i> Atualizar Dados (Caixa)
+                </button>
+                <button onclick="abrirAdminModal()" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-amber-500/10 transition-all cursor-pointer">
+                    <i class="fa-solid fa-lock"></i> Painel Admin
+                </button>
+            </div>
+        </div>
+
+        <!-- Banner com Cards de Seleção dos 2 Bolões (Máximo 44 cotas cada) -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-indigo-950/80 border border-slate-800/80 p-6 md:p-8 mb-8 shadow-2xl">
+            <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl text-amber-400 pointer-events-none">
+                <i class="fa-solid fa-clover"></i>
+            </div>
+            
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full text-amber-400 text-xs font-bold mb-3">
+                    <i class="fa-solid fa-star"></i> Clique em um dos bolões abaixo para selecionar as cotas
+                </div>
+                <h2 class="text-2xl md:text-4xl font-black text-white tracking-tight mb-4">
+                    Faça sua fezinha no <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Vai Que Dá!</span>
+                </h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                    <!-- Card Bolão 01 -->
+                    <div id="card-bolao-1" onclick="mudarBolao(1)" class="cursor-pointer bg-slate-950/80 border-2 rounded-2xl p-5 flex items-center gap-4 transition-all shadow-lg border-amber-500 ring-2 ring-amber-500/20">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-2xl shadow">
+                            01
+                        </div>
+                        <div class="flex-grow">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">Selecionado Atualmente</span>
+                            <h3 class="text-white font-bold text-base mt-1">Bolão 01 - Premium</h3>
+                            <p class="text-amber-400 font-extrabold text-lg">R$ 110,00 <span class="text-xs text-slate-400 font-normal">por cota (Max: 44)</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Card Bolão 02 -->
+                    <div id="card-bolao-2" onclick="mudarBolao(2)" class="cursor-pointer bg-slate-950/60 border-2 border-slate-800 rounded-2xl p-5 flex items-center gap-4 transition-all hover:border-slate-700 shadow-lg">
+                        <div class="w-14 h-14 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-2xl shadow">
+                            02
+                        </div>
+                        <div class="flex-grow">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-0.5 rounded">Clique para Selecionar</span>
+                            <h3 class="text-white font-bold text-base mt-1">Bolão 02 - Econômico</h3>
+                            <p class="text-cyan-400 font-extrabold text-lg">R$ 60,00 <span class="text-xs text-slate-400 font-normal">por cota (Max: 44)</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Concurso / Último Sorteio -->
+        <div class="flex flex-col md:flex-row justify-between items-center bg-slate-900/80 border border-slate-800 rounded-2xl p-5 mb-8 gap-4">
+            <div class="flex items-center gap-4">
+                <div class="bg-slate-800 px-4 py-2.5 rounded-xl border border-slate-700 text-center">
+                    <span class="block text-xs text-slate-400 font-medium">Concurso</span>
+                    <span id="concurso-numero" class="text-lg font-bold text-amber-400">Mega-Sena</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 id="data-sorteio-txt" class="text-white font-bold text-base">Sorteio: --/--/----</h3>
+                        <span class="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">Último Sorteio</span>
+                    </div>
+                    <p class="text-xs text-amber-400 font-mono mt-1 font-semibold" id="dezenas-sorteadas-txt">Aguardando atualização...</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs text-slate-400 block">Status da Sincronização</span>
+                <span class="text-xs text-emerald-400 font-semibold" id="status-sync">Online e Pronto para Atualizar</span>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal: Grid de Cotas e Painel Lateral -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Grade de Cotas -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-slate-900/70 border border-slate-800 p-5 rounded-2xl flex flex-wrap items-center justify-around gap-4 shadow-md">
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 rounded-lg bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center"></div>
+                        <span class="text-sm font-bold text-slate-200">Livre</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 rounded-lg bg-amber-500/20 border-2 border-amber-500 flex items-center justify-center"></div>
+                        <span class="text-sm font-bold text-slate-200">Reservado</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 rounded-lg bg-indigo-500/20 border-2 border-indigo-500 flex items-center justify-center"></div>
+                        <span class="text-sm font-bold text-slate-200">Confirmado</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 id="titulo-grid-bolao" class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-amber-400"></i> Cotas do Bolão 01 (Até 44 Cotas)
+                        </h3>
+                        <span id="contador-cotas-status" class="text-xs text-slate-400 font-medium">Carregando cotas...</span>
+                    </div>
+
+                    <div id="grid-cotas" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[600px] overflow-y-auto pr-2">
+                        <!-- Gerado via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Placar de Acertos / Resumo de Jogos -->
+            <div class="space-y-6">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl sticky top-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-amber-400"></i> Resumo de Acertos
+                        </h3>
+                        <span class="bg-amber-500/10 text-amber-400 text-xs font-semibold px-2.5 py-1 rounded-lg border border-amber-500/20" id="badge-bolao-ativo">Bolão 01</span>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-medal"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Sena (6 Acertos)</h4>
+                                    <p class="text-xs text-slate-400">Prêmio principal</p>
+                                </div>
+                            </div>
+                            <span id="acertos-sena-val" class="text-2xl font-black text-amber-400">0</span>
+                        </div>
+
+                        <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Quina (5 Acertos)</h4>
+                                    <p class="text-xs text-slate-400">Premiação secundária</p>
+                                </div>
+                            </div>
+                            <span id="acertos-quina-val" class="text-2xl font-black text-cyan-400">0</span>
+                        </div>
+
+                        <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-star"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-bold text-sm">Quadra (4 Acertos)</h4>
+                                    <p class="text-xs text-slate-400">Premiação inicial</p>
+                                </div>
+                            </div>
+                            <span id="acertos-quadra-val" class="text-2xl font-black text-emerald-400">0</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-5">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Jogos Cadastrados</h4>
+                        <div id="lista-jogos-resumo" class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500 mt-12">
+        <p>Bolões Mega da Virada — Desenvolvido com segurança e transparência para os participantes.</p>
+    </footer>
+
+    <!-- MODAL DE RESERVA DE COTA -->
+    <div id="modal-cota" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="modal-glass border border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl relative">
+            <button onclick="fecharModalCota()" class="absolute top-5 right-5 text-slate-400 hover:text-white cursor-pointer">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="mb-5">
+                <span id="modal-bolao-nome" class="text-xs font-bold text-amber-400 uppercase tracking-wider">Bolão 01</span>
+                <h3 id="modal-cota-titulo" class="text-2xl font-black text-white">Cota #01</h3>
+            </div>
+
+            <div id="conteudo-cota-livre">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-5 space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-400">Valor da Cota:</span>
+                        <span id="modal-valor-cota" class="text-emerald-400 font-bold text-base">R$ 110,00</span>
+                    </div>
+                    <div class="flex justify-between text-sm items-center">
+                        <span class="text-slate-400">Pagamento Pix:</span>
+                        <span class="text-amber-400 font-semibold text-xs bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">Enviado no WhatsApp</span>
+                    </div>
+                </div>
+
+                <form id="form-reserva" onsubmit="enviarReserva(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Seu Nome Completo:</label>
+                        <input type="text" id="input-nome" required placeholder="Digite seu nome" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Seu CPF (Para controle interno):</label>
+                        <input type="text" id="input-cpf" required placeholder="000.000.000-00" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500 transition-all">
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-slate-950 font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Reservar e Enviar via WhatsApp
+                    </button>
+                </form>
+            </div>
+
+            <div id="conteudo-cota-ocupada" class="hidden text-center py-6 space-y-4">
+                <div class="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center text-2xl border border-amber-500/20">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold text-white mb-1">Cota Ocupada / Indisponível</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Esta cota já se encontra <span id="status-ocupada-texto" class="text-amber-400 font-semibold">Reservada ou Confirmada</span>. Por motivos de segurança e privacidade (LGPD), os dados completos não podem ser exibidos publicamente.
+                    </p>
+                </div>
+                <button onclick="fecharModalCota()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl transition-all cursor-pointer">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PAINEL ADMIN -->
+    <div id="modal-admin" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="modal-glass border border-slate-800 rounded-3xl w-full max-w-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="fecharAdminModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white cursor-pointer">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div id="admin-login-box">
+                <div class="mb-6 text-center">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center text-xl mb-3">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-white">Painel Administrativo</h3>
+                    <p class="text-xs text-slate-400">Digite a senha para gerenciar cotas e jogos</p>
+                </div>
+                <div class="space-y-4 max-w-sm mx-auto">
+                    <input type="password" id="admin-senha-input" placeholder="Senha do Administrador" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm text-center focus:outline-none focus:border-amber-500">
+                    <button onclick="fazerLoginAdmin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl transition-all cursor-pointer">
+                        Entrar no Painel
+                    </button>
+                </div>
+            </div>
+
+            <div id="admin-painel-box" class="hidden space-y-6">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Gerenciamento do Sistema</h3>
+                        <p class="text-xs text-slate-400">Configure os bolões, dezenas (6 a 15 números) e cotas (máx 44)</p>
+                    </div>
+                    <button onclick="sairAdmin()" class="text-xs text-red-400 hover:underline font-semibold">Sair</button>
+                </div>
+
+                <div class="flex gap-2 border-b border-slate-800 pb-2">
+                    <button onclick="mudarAdminTab(1)" id="admin-tab-1" class="px-4 py-2 bg-amber-500 text-slate-950 rounded-xl font-bold text-xs cursor-pointer">Bolão 01</button>
+                    <button onclick="mudarAdminTab(2)" id="admin-tab-2" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold text-xs cursor-pointer">Bolão 02</button>
+                    <button onclick="mudarAdminTab(3)" id="admin-tab-3" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold text-xs cursor-pointer">Sorteio & Config</button>
+                </div>
+
+                <div id="admin-conteudo-bolao" class="space-y-4">
+                    <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+                        <h4 class="text-sm font-bold text-amber-400" id="admin-titulo-bolao-atual">Editando Bolão 01</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Valor da Cota (R$)</label>
+                                <input type="number" id="admin-valor-cota" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Total de Cotas (Máx 44)</label>
+                                <input type="number" id="admin-total-cotas" max="44" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-sm" value="44">
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="block text-xs text-slate-400 mb-1">Jogos Cadastrados (Dezenas separadas por vírgula - 6 a 15 números por jogo)</label>
+                            <textarea id="admin-textarea-jogos" rows="6" placeholder="Ex: 05, 12, 23, 34, 45, 52" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white text-xs font-mono"></textarea>
+                        </div>
+
+                        <button onclick="salvarConfigBolao()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition-all cursor-pointer">
+                            Salvar Alterações do Bolão
+                        </button>
+                    </div>
+                </div>
+
+                <div id="admin-conteudo-sorteio" class="hidden space-y-4">
+                    <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+                        <h4 class="text-sm font-bold text-amber-400">Dezenas Sorteadas Oficiais (Definidas pelo Admin)</h4>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Concurso</label>
+                            <input type="text" id="admin-concurso-nome" placeholder="Ex: Mega-Sena Concurso 2800" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-sm mb-2">
+                            <label class="block text-xs text-slate-400 mb-1">6 dezenas sorteadas (Ex: 08, 19, 25, 30, 44, 50)</label>
+                            <input type="text" id="admin-dezenas-sorteio" placeholder="08, 19, 25, 30, 44, 50" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-sm font-mono">
+                        </div>
+                        <button onclick="salvarSorteioAdmin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition-all cursor-pointer">
+                            Salvar Sorteio Oficial e Liberar para Usuários
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Principal -->
+    <script>
+        let bolaoAtivo = 1;
+        let adminTabAtiva = 1;
+        let cotaSelecionadaId = null;
+
+        let dadosSistema = {
+            boloinfo: {
+                concurso: "Mega-Sena",
+                concursoNumero: "",
+                dataSorteio: "",
+                dezenasSorteadas: [],
+                adminDefiniu: false
+            },
+            bolao1: {
+                valorCota: 110,
+                totalCotas: 44,
+                cotas: Array.from({length: 44}, (_, i) => ({ id: i+1, status: 'livre', nome: '', cpf: '' })),
+                jogos: [
+                    "02, 11, 23, 34, 45, 52",
+                    "05, 14, 21, 33, 42, 51, 56, 59"
+                ]
+            },
+            bolao2: {
+                valorCota: 60,
+                totalCotas: 44,
+                cotas: Array.from({length: 44}, (_, i) => ({ id: i+1, status: 'livre', nome: '', cpf: '' })),
+                jogos: [
+                    "01, 10, 22, 31, 40, 49, 54, 58"
+                ]
+            }
+        };
+
+        if(localStorage.getItem('dados_boloes_mega_v5')) {
+            try {
+                dadosSistema = JSON.parse(localStorage.getItem('dados_boloes_mega_v5'));
+            } catch(e) { console.error(e); }
+        } else {
+            localStorage.removeItem('dados_boloes_mega_v4');
+        }
+
+        function salvarDadosLocal() {
+            localStorage.setItem('dados_boloes_mega_v5', JSON.stringify(dadosSistema));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizarCotas();
+            atualizarResumoAcertos();
+        });
+
+        function mudarBolao(num) {
+            bolaoAtivo = num;
+            const card1 = document.getElementById('card-bolao-1');
+            const card2 = document.getElementById('card-bolao-2');
+
+            if(num === 1) {
+                card1.className = "cursor-pointer bg-slate-950/80 border-2 rounded-2xl p-5 flex items-center gap-4 transition-all shadow-lg border-amber-500 ring-2 ring-amber-500/20";
+                card1.querySelector('div:first-child').className = "w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-2xl shadow";
+                card1.querySelector('span').className = "text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded";
+                card1.querySelector('span').innerText = "Selecionado Atualmente";
+
+                card2.className = "cursor-pointer bg-slate-950/60 border-2 border-slate-800 rounded-2xl p-5 flex items-center gap-4 transition-all hover:border-slate-700 shadow-lg";
+                card2.querySelector('div:first-child').className = "w-14 h-14 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-2xl shadow";
+                card2.querySelector('span').className = "text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-0.5 rounded";
+                card2.querySelector('span').innerText = "Clique para Selecionar";
+            } else {
+                card2.className = "cursor-pointer bg-slate-950/80 border-2 rounded-2xl p-5 flex items-center gap-4 transition-all shadow-lg border-cyan-500 ring-2 ring-cyan-500/20";
+                card2.querySelector('div:first-child').className = "w-14 h-14 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-2xl shadow";
+                card2.querySelector('span').className = "text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded";
+                card2.querySelector('span').innerText = "Selecionado Atualmente";
+
+                card1.className = "cursor-pointer bg-slate-950/60 border-2 border-slate-800 rounded-2xl p-5 flex items-center gap-4 transition-all hover:border-slate-700 shadow-lg";
+                card1.querySelector('div:first-child').className = "w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-2xl shadow";
+                card1.querySelector('span').className = "text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-0.5 rounded";
+                card1.querySelector('span').innerText = "Clique para Selecionar";
+            }
+
+            document.getElementById('titulo-grid-bolao').innerHTML = `<i class="fa-solid fa-list-check text-amber-400"></i> Cotas do Bolão 0${num} (R$ ${num === 1 ? '110,00' : '60,00'} - Máx 44)`;
+            document.getElementById('badge-bolao-ativo').innerText = `Bolão 0${num}`;
+
+            renderizarCotas();
+            atualizarResumoAcertos();
+        }
+
+        function renderizarCotas() {
+            const grid = document.getElementById('grid-cotas');
+            grid.innerHTML = '';
+            const bolao = bolaoAtivo === 1 ? dadosSistema.bolao1 : dadosSistema.bolao2;
+
+            let livres = 0, reservadas = 0, confirmadas = 0;
+
+            bolao.cotas.forEach(cota => {
+                if(cota.status === 'livre') livres++;
+                else if(cota.status === 'reservado') reservadas++;
+                else if(cota.status === 'confirmado') confirmadas++;
+
+                let bgClass = "bg-emerald-500/10 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20";
+                let badgeTxt = "Livre";
+                let infoExibida = 'R$ ' + (bolaoAtivo === 1 ? '110,00' : '60,00');
+
+                if(cota.status === 'reservado') {
+                    bgClass = "bg-amber-500/10 border-amber-500/40 text-amber-400 hover:bg-amber-500/20";
+                    badgeTxt = "Reservado";
+                    infoExibida = formatarIdentificacaoParcial(cota.nome, cota.cpf);
+                } else if(cota.status === 'confirmado') {
+                    bgClass = "bg-indigo-500/10 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/20";
+                    badgeTxt = "Confirmado";
+                    infoExibida = formatarIdentificacaoParcial(cota.nome, cota.cpf);
+                }
+
+                const card = document.createElement('div');
+                card.className = `border rounded-2xl p-3.5 flex flex-col justify-between cursor-pointer transition-all ${bgClass}`;
+                card.onclick = () => abrirModalCota(cota.id);
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-extrabold text-sm">#${String(cota.id).padStart(2, '0')}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-900/60">${badgeTxt}</span>
+                    </div>
+                    <div class="text-[11px] text-slate-300 truncate font-medium">
+                        ${infoExibida}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('contador-cotas-status').innerText = `${livres} livres, ${reservadas} reservadas, ${confirmadas} confirmadas`;
+        }
+
+        function formatarIdentificacaoParcial(nomeCompleto, cpfCompleto) {
+            if(!nomeCompleto) return 'Ocupado';
+            const primeiroNome = nomeCompleto.trim().split(' ')[0];
+            const numerosCpf = (cpfCompleto || '').replace(/\D/g, '');
+            const trechoCpf = numerosCpf.length >= 3 ? numerosCpf.substring(0, 3) + '...' : '***';
+            return `${primeiroNome} - ${trechoCpf}`;
+        }
+
+        function abrirModalCota(id) {
+            cotaSelecionadaId = id;
+            const bolao = bolaoAtivo === 1 ? dadosSistema.bolao1 : dadosSistema.bolao2;
+            const cota = bolao.cotas.find(c => c.id === id);
+
+            document.getElementById('modal-bolao-nome').innerText = `Bolão 0${bolaoAtivo} (R$ ${bolao.valorCota},00)`;
+            document.getElementById('modal-cota-titulo').innerText = `Cota #${String(cota.id).padStart(2, '0')}`;
+            document.getElementById('modal-valor-cota').innerText = `R$ ${bolao.valorCota},00`;
+
+            const livreBox = document.getElementById('conteudo-cota-livre');
+            const ocupadaBox = document.getElementById('conteudo-cota-ocupada');
+
+            if(cota.status === 'livre') {
+                livreBox.classList.remove('hidden');
+                ocupadaBox.classList.add('hidden');
+                document.getElementById('input-nome').value = '';
+                document.getElementById('input-cpf').value = '';
+            } else {
+                livreBox.classList.add('hidden');
+                ocupadaBox.classList.remove('hidden');
+                document.getElementById('status-ocupada-texto').innerText = cota.status === 'reservado' ? 'Reservada (Aguardando Pix)' : 'Confirmada';
+            }
+
+            document.getElementById('modal-cota').classList.remove('hidden');
+        }
+
+        function fecharModalCota() {
+            document.getElementById('modal-cota').classList.add('hidden');
+        }
+const URL_DO_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbz08EXQrzrD-sT9-Pl-72jkLUNImuakZHd8mCjSSG9LziTEc8AW-3VsxupRGf1okK02/exec";
+
+        async function enviarReserva(e) {
+            e.preventDefault();
+            const nome = document.getElementById('input-nome').value.trim();
+            const cpf = document.getElementById('input-cpf').value.trim();
+
+            if(!nome || !cpf) return;
+
+            const bolao = bolaoAtivo === 1 ? dadosSistema.bolao1 : dadosSistema.bolao2;
+            const cota = bolao.cotas.find(c => c.id === cotaSelecionadaId);
+            
+            if(cota) {
+                cota.status = 'reservado';
+                cota.nome = nome;
+                cota.cpf = cpf;
+                salvarDadosLocal();
+                renderizarCotas();
+            }
+
+            fecharModalCota();
+
+            // Envia os dados para a planilha do Google Sheets em segundo plano
+            try {
+                await fetch(URL_DO_APPS_SCRIPT, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "text/plain;charset=utf-8"
+                    },
+                    body: JSON.stringify({
+                        bolao: bolaoAtivo,
+                        cotaId: cotaSelecionadaId,
+                        nome: nome,
+                        cpf: cpf
+                    })
+                });
+                console.log("Salvo na planilha com sucesso!");
+            } catch (err) {
+                console.error("Erro ao salvar na planilha:", err);
+            }
+
+            // Prepara e abre o WhatsApp com a mensagem pronta
+            let textoJogos = bolao.jogos.map((j, i) => `Jogo ${i+1}: [ ${j} ]`).join('\n');
+            const mensagem = `Olá Fábio! Gostaria de confirmar a reserva da Cota #${String(cotaSelecionadaId).padStart(2, '0')} do Bolão 0${bolaoAtivo} (R$ ${bolao.valorCota},00).\n\nMeus dados:\nNome: ${nome}\nCPF: ${cpf}\n\n*Números do Bolão Escolhido:*\n${textoJogos}\n\nAguardo a confirmação e a foto dos números reais jogados na lotérica enviados via transmissão WhatsApp.`;
+            
+            const urlWp = `https://wa.me/5514981485038?text=${encodeURIComponent(mensagem)}`;
+            window.open(urlWp, '_blank');
+        }
+        function combinacao(n, k) {
+            if (k < 0 || k > n) return 0;
+            if (k === 0 || k === n) return 1;
+            if (k > n / 2) k = n - k;
+            let c = 1;
+            for (let i = 1; i <= k; i++) {
+                c = c * (n - (k - i)) / i;
+            }
+            return Math.round(c);
+        }
+
+        function atualizarResumoAcertos() {
+            const bolao = bolaoAtivo === 1 ? dadosSistema.bolao1 : dadosSistema.bolao2;
+            const listaJogosDiv = document.getElementById('lista-jogos-resumo');
+            listaJogosDiv.innerHTML = '';
+
+            let totalSena = 0, totalQuina = 0, totalQuadra = 0;
+            const dezenasSorteadas = dadosSistema.boloinfo.dezenasSorteadas || [];
+
+            const concursoEl = document.getElementById('concurso-numero');
+            const dataSorteioEl = document.getElementById('data-sorteio-txt');
+            const dezenasTxtEl = document.getElementById('dezenas-sorteadas-txt');
+
+            concursoEl.innerText = dadosSistema.boloinfo.concurso || "Mega-Sena";
+            dataSorteioEl.innerText = dadosSistema.boloinfo.dataSorteio ? `Sorteio: ${dadosSistema.boloinfo.dataSorteio}` : "Sorteio: --/--/----";
+
+            if(dezenasSorteadas.length > 0) {
+                dezenasTxtEl.innerText = "Sorteadas: " + dezenasSorteadas.join(', ');
+            } else {
+                dezenasTxtEl.innerText = "Aguardando realização do sorteio oficial...";
+            }
+
+            bolao.jogos.forEach((jogoStr, idx) => {
+                const dezenasJogo = jogoStr.split(/[\s,]+/).filter(Boolean).map(n => n.padStart(2, '0'));
+                
+                let acertosCount = 0;
+                let senaNesteJogo = 0;
+                let quinaNesteJogo = 0;
+                let quadraNesteJogo = 0;
+
+                if(dezenasSorteadas.length > 0) {
+                    acertosCount = dezenasJogo.filter(num => dezenasSorteadas.includes(num)).length;
+                    
+                    const k = dezenasJogo.length; 
+                    const h = acertosCount;        
+
+                    if (k === 6) {
+                        if (h === 6) senaNesteJogo = 1;
+                        else if (h === 5) quinaNesteJogo = 1;
+                        else if (h === 4) quadraNesteJogo = 1;
+                    } else {
+                        if (h >= 6) {
+                            senaNesteJogo = combinacao(h, 6) * combinacao(k - h, 0);
+                        }
+                        if (h >= 5) {
+                            quinaNesteJogo = combinacao(h, 5) * combinacao(k - h, 1);
+                        }
+                        if (h >= 4) {
+                            quadraNesteJogo = combinacao(h, 4) * combinacao(k - h, 2);
+                        }
+                    }
+
+                    totalSena += senaNesteJogo;
+                    totalQuina += quinaNesteJogo;
+                    totalQuadra += quadraNesteJogo;
+                }
+
+                const item = document.createElement('div');
+                item.className = "bg-slate-950/60 border border-slate-800/80 p-3 rounded-xl space-y-1.5";
+                item.innerHTML = `
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-white font-bold">Jogo ${idx+1} (${dezenasJogo.length} dez.)</span>
+                        <span class="${acertosCount >= 4 ? 'text-amber-400 font-bold' : 'text-slate-400'}">${dezenasSorteadas.length > 0 ? acertosCount + ' acertos' : ''}</span>
+                    </div>
+                    <div class="text-amber-300 font-mono text-xs tracking-wider font-semibold break-all">
+                        ${dezenasJogo.join(', ')}
+                    </div>
+                `;
+                listaJogosDiv.appendChild(item);
+            });
+
+            document.getElementById('acertos-sena-val').innerText = totalSena;
+            document.getElementById('acertos-quina-val').innerText = totalQuina;
+            document.getElementById('acertos-quadra-val').innerText = totalQuadra;
+        }
+
+        // Função de Sincronização via API da Caixa (Só puxa se o Admin não tiver definido manualmente)
+        async function sincronizarDadosCaixa() {
+            const icon = document.getElementById('sync-icon');
+            const statusSync = document.getElementById('status-sync');
+            icon.classList.add('fa-spin');
+            statusSync.innerText = "Buscando dados da Caixa...";
+
+            // Se o Admin definiu manualmente, respeita o Admin
+            if(dadosSistema.boloinfo.adminDefiniu) {
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                    statusSync.innerText = "Online (Admin Definiu)";
+                    renderizarCotas();
+                    atualizarResumoAcertos();
+                    alert('O Administrador definiu um resultado manual. O sistema está usando os dados do Admin.');
+                }, 600);
+                return;
+            }
+
+            try {
+                const response = await fetch('https://loteriascaixa-api.herokuapp.com/api/megasena/latest');
+                const data = await response.json();
+                
+                if(data && data.dezenas) {
+                    dadosSistema.boloinfo.concurso = `Concurso ${data.concurso}`;
+                    dadosSistema.boloinfo.dataSorteio = data.data;
+                    dadosSistema.boloinfo.dezenasSorteadas = data.dezenas.map(n => String(n).padStart(2, '0'));
+                    
+                    salvarDadosLocal();
+                    renderizarCotas();
+                    atualizarResumoAcertos();
+                    
+                    statusSync.innerText = "Online e Sincronizado (Caixa)";
+                    alert(`Sincronizado com sucesso!\nConcurso: ${data.concurso} (${data.data})\nDezenas: ${data.dezenas.join(', ')}`);
+                } else {
+                    throw new Error('Dados incompletos');
+                }
+            } catch (error) {
+                console.error(error);
+                statusSync.innerText = "Erro ao conectar";
+                alert('Não foi possível buscar automaticamente na API da Caixa. Verifique sua conexão ou defina as dezenas pelo Painel Admin.');
+            } finally {
+                icon.classList.remove('fa-spin');
+            }
+        }
+
+        function abrirAdminModal() {
+            document.getElementById('modal-admin').classList.remove('hidden');
+            document.getElementById('admin-login-box').classList.remove('hidden');
+            document.getElementById('admin-painel-box').classList.add('hidden');
+            document.getElementById('admin-senha-input').value = '';
+        }
+
+        function fecharAdminModal() {
+            document.getElementById('modal-admin').classList.add('hidden');
+        }
+
+        function fazerLoginAdmin() {
+            const senha = document.getElementById('admin-senha-input').value;
+            if(senha === 'admin123' || senha === '1234') {
+                document.getElementById('admin-login-box').classList.add('hidden');
+                document.getElementById('admin-painel-box').classList.remove('hidden');
+                carregarDadosAdminTab();
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+
+        function sairAdmin() {
+            document.getElementById('admin-login-box').classList.remove('hidden');
+            document.getElementById('admin-painel-box').classList.add('hidden');
+        }
+
+        function mudarAdminTab(tab) {
+            adminTabAtiva = tab;
+            document.getElementById('admin-tab-1').className = tab === 1 ? "px-4 py-2 bg-amber-500 text-slate-950 rounded-xl font-bold text-xs cursor-pointer" : "px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold text-xs cursor-pointer";
+            document.getElementById('admin-tab-2').className = tab === 2 ? "px-4 py-2 bg-amber-500 text-slate-950 rounded-xl font-bold text-xs cursor-pointer" : "px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold text-xs cursor-pointer";
+            document.getElementById('admin-tab-3').className = tab === 3 ? "px-4 py-2 bg-amber-500 text-slate-950 rounded-xl font-bold text-xs cursor-pointer" : "px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold text-xs cursor-pointer";
+
+            const bolaoBox = document.getElementById('admin-conteudo-bolao');
+            const sorteioBox = document.getElementById('admin-conteudo-sorteio');
+
+            if(tab === 3) {
+                bolaoBox.classList.add('hidden');
+                sorteioBox.classList.remove('hidden');
+                document.getElementById('admin-concurso-nome').value = dadosSistema.boloinfo.concurso || "Mega-Sena";
+                document.getElementById('admin-dezenas-sorteio').value = (dadosSistema.boloinfo.dezenasSorteadas || []).join(', ');
+            } else {
+                sorteioBox.classList.add('hidden');
+                bolaoBox.classList.remove('hidden');
+                carregarDadosAdminTab();
+            }
+        }
+
+        function carregarDadosAdminTab() {
+            const bolao = adminTabAtiva === 1 ? dadosSistema.bolao1 : dadosSistema.bolao2;
+            document.getElementById('admin-titulo-bolao-atual').innerText = `Editando Bolão 0${adminTabAtiva}`;
+            document.getElementById('admin-valor-cota').value = bolao.valorCota;
+            document.getElementById('admin-total-cotas').value = Math.min(bolao.totalCotas, 44);
+            document.getElementById('admin-textarea-jogos').value = (bolao.jogos || []).join('\n');
+        }
+
+        function salvarConfigBolao() {
+            const bolao = adminTabAtiva === 1 ? dadosSistema.bolao1 : dadosSistema.bolao2;
+            bolao.valorCota = parseFloat(document.getElementById('admin-valor-cota').value) || bolao.valorCota;
+            
+            let totalDesejado = parseInt(document.getElementById('admin-total-cotas').value) || 44;
+            if(totalDesejado > 44) totalDesejado = 44;
+            bolao.totalCotas = totalDesejado;
+            
+            const textoJogos = document.getElementById('admin-textarea-jogos').value;
+            bolao.jogos = textoJogos.split('\n').filter(l => l.trim() !== '');
+
+            if(bolao.cotas.length < bolao.totalCotas) {
+                for(let i = bolao.cotas.length + 1; i <= bolao.totalCotas; i++) {
+                    bolao.cotas.push({ id: i, status: 'livre', nome: '', cpf: '' });
+                }
+            } else if(bolao.cotas.length > bolao.totalCotas) {
+                bolao.cotas = bolao.cotas.slice(0, bolao.totalCotas);
+            }
+
+            salvarDadosLocal();
+            renderizarCotas();
+            atualizarResumoAcertos();
+            alert('Configurações do bolão salvas com sucesso!');
+            fecharAdminModal();
+        }
+
+        function salvarSorteioAdmin() {
+            const nomeConcurso = document.getElementById('admin-concurso-nome').value.trim() || "Mega-Sena";
+            const textoDezenas = document.getElementById('admin-dezenas-sorteio').value;
+            
+            dadosSistema.boloinfo.concurso = nomeConcurso;
+            dadosSistema.boloinfo.dataSorteio = new Date().toLocaleDateString('pt-BR');
+            dadosSistema.boloinfo.dezenasSorteadas = textoDezenas.split(/[\s,]+/).filter(Boolean).map(n => n.padStart(2, '0'));
+            dadosSistema.boloinfo.adminDefiniu = true; // Marca que o Admin assumiu o controle
+
+            salvarDadosLocal();
+            atualizarResumoAcertos();
+            document.getElementById('status-sync').innerText = "Online e Sincronizado (Admin Definiu)";
+            alert('Sorteio oficial definido e travado pelo Administrador!');
+            fecharAdminModal();
+        }
+    </script>
+</body>
+</html>
