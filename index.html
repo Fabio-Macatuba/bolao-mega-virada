@@ -3,11 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bolões Mega da Virada - Sistema Oficial</title>
-    <meta http-equiv="refresh" content="0; url=https://script.google.com/macros/s/AKfycbz6D_95II-VZjhha4JpO8N2fobVUJAPxSFqRfoQ-7UA765zW8-USok6AUZ2D5stHrgX/exec">
+    <title>Bolão Fábio de Macatuba - Mega da Virada</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body style="background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <p>Redirecionando para o sistema oficial do bolão...</p>
-    <p><a href="https://script.google.com/macros/s/AKfycbz6D_95II-VZjhha4JpO8N2fobVUJAPxSFqRfoQ-7UA765zW8-USok6AUZ2D5stHrgX/exec" style="color: #34d399;">Clique aqui se não for redirecionado automaticamente.</a></p>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Tela Inicial de Chamada (Landing Page) -->
+    <div id="landingScreen" class="flex-grow flex flex-col items-center justify-center p-6 text-center relative">
+        <!-- Efeito de brilho de fundo -->
+        <div class="absolute w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-2xl mx-auto z-10 space-y-6">
+            <span class="bg-amber-500/20 text-amber-400 text-xs sm:text-sm font-bold uppercase tracking-widest px-4 py-1.5 rounded-full border border-amber-500/30">
+                🏆 Bolão Fábio de Macatuba • Mega da Virada 2026
+            </span>
+
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                Chegou a sua <span class="text-amber-400">hora de vencer!</span>
+            </h1>
+
+            <p class="text-slate-300 text-base sm:text-lg max-w-lg mx-auto">
+                Prêmio milionário acumulado! Não fique de fora do <strong>Bolão Fábio de Macatuba</strong>. Garanta sua cota agora mesmo.
+            </p>
+
+            <div class="pt-4">
+                <button onclick="entrarNoBolao()" class="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-lg rounded-2xl shadow-lg shadow-amber-500/20 transform hover:-translate-y-0.5 transition active:translate-y-0 cursor-pointer">
+                    <span>🚀 BOLÃO</span>
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela do Sistema (Oculta inicialmente, abre na mesma aba) -->
+    <div id="appScreen" class="hidden flex-grow w-screen h-screen flex flex-col">
+        <div class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center">
+            <span class="text-sm font-semibold text-slate-300">📊 Bolão Fábio de Macatuba</span>
+            <button onclick="voltarInicio()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition">
+                ← Voltar à Capa
+            </button>
+        </div>
+        <iframe id="sistemaFrame" class="w-full flex-grow border-0" title="Bolão Fábio de Macatuba"></iframe>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="text-center py-4 text-xs text-slate-600">
+        Fábio de Macatuba &bull; Hospedado no GitHub Pages
+    </footer>
+
+    <!-- Script de transição na mesma aba -->
+    <script>
+        const urlSistema = "https://script.google.com/macros/s/AKfycbz6D_95II-VZjhha4JpO8N2fobVUJAPxSFqRfoQ-7UA765zW8-USok6AUZ2D5stHrgX/exec";
+
+        function entrarNoBolao() {
+            const landing = document.getElementById('landingScreen');
+            const app = document.getElementById('appScreen');
+            const frame = document.getElementById('sistemaFrame');
+
+            // Carrega o link no iframe apenas na primeira vez que clica
+            if (!frame.src || frame.src === "about:blank") {
+                frame.src = urlSistema;
+            }
+
+            // Esconde a capa e mostra o sistema na tela inteira, tudo na mesma aba
+            landing.classList.add('hidden');
+            app.classList.remove('hidden');
+        }
+
+        function voltarInicio() {
+            const landing = document.getElementById('landingScreen');
+            const app = document.getElementById('appScreen');
+
+            app.classList.add('hidden');
+            landing.classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
